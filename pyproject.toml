@@ -7,8 +7,8 @@ name = "audp-ecm"
 description = "AUDP-ECM error correction (Reed–Solomon, BCH, CRC-16, burst interleaving) for Python"
 readme = "README.md"
 requires-python = ">=3.10"
-license = "Apache-2.0 OR MIT"
-license-files = ["LICENSE-APACHE", "LICENSE-MIT"]
+license = "LicenseRef-ASPF-Proprietary"
+license-files = ["LICENSE"]
 authors = [{ name = "Sbruice Singh", email = "sbruicesingh@haclon.in" }]
 keywords = ["error-correction", "reed-solomon", "bch", "crc", "telemetry", "fec"]
 classifiers = [

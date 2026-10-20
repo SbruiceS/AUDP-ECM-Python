@@ -5,7 +5,7 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-3776AB)](docs/index.md#compatibility)
 [![Wheels](https://img.shields.io/badge/wheels-abi3%20%7C%20linux%20%7C%20windows%20%7C%20macOS-informational)](docs/releasing.md)
 [![Unsafe](https://img.shields.io/badge/unsafe-forbidden-success)](docs/security.md)
-[![License](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue)](#licence)
+[![License](https://img.shields.io/badge/license-proprietary%20(ASPF)-lightgrey)](LICENSE)
 [![Website](https://img.shields.io/badge/website-AUDP--ECM-0b7285)](https://sbruices.github.io/AUDP-ECM-Website/)
 
 Python bindings for **AUDP-ECM**, the AUDP Error Correction Mathematics Engine:
@@ -118,4 +118,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for building against a local core checkou
 
 ## Licence
 
-Apache-2.0 OR MIT. © 2026 Sbruice Singh / Agriculture Service of Product Farm (ASPF).
+**Proprietary software — not open source.** © 2026 Sbruice Singh / Agriculture Service
+of Product Farm (ASPF). All rights reserved. Use requires a written licence agreement
+with ASPF; see [LICENSE](LICENSE). Licensing enquiries: sbruicesingh@haclon.in.

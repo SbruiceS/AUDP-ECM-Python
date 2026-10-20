@@ -1,0 +1,79 @@
+ASPF PROPRIETARY SOFTWARE LICENSE
+Version 1.0 — 2026
+
+Copyright (c) 2026 Sbruice Singh / Agriculture Service of Product Farm (ASPF).
+All rights reserved.
+
+Licensor: Agriculture Service of Product Farm ("ASPF").
+Software: AUDP-ECM (AUDP Error Correction Mathematics Engine), including its
+source code, object code, bindings, documentation, examples, website content
+and any associated materials (the "Software").
+
+1. OWNERSHIP
+   The Software is proprietary to ASPF and is protected by copyright and other
+   intellectual-property laws and international treaties. The Software is
+   licensed, not sold. ASPF retains all right, title and interest in and to the
+   Software, including all copies, modifications and derivative works.
+
+2. NO LICENCE WITHOUT WRITTEN AGREEMENT
+   No licence or other right is granted by this notice, by implication, by
+   estoppel or otherwise. Any use of the Software requires a separate written
+   licence agreement signed by an authorised representative of ASPF
+   (a "Written Agreement"), and is permitted only to the extent and on the terms
+   stated in that Written Agreement.
+
+3. RESTRICTIONS
+   Except as expressly permitted in a Written Agreement, you may not:
+   (a) use, run, install or integrate the Software;
+   (b) copy, reproduce or download the Software, in whole or in part;
+   (c) modify, adapt, translate or create derivative works of the Software;
+   (d) distribute, publish, sublicense, sell, rent, lease, lend or otherwise
+       make the Software available to any third party;
+   (e) reverse engineer, decompile or disassemble the Software, except where
+       such restriction is prohibited by applicable law;
+   (f) remove, alter or obscure any copyright, trademark or proprietary notice;
+   (g) use the Software to build a competing product or service.
+
+4. PUBLIC VISIBILITY IS NOT A LICENCE
+   The fact that the Software, or any part of it, may be visible on a public
+   website or code-hosting service does not grant any right to use it. Any
+   permission that a hosting service's terms of service grant to its users
+   (for example, to view content on that service) is limited to what those terms
+   strictly require and does not extend to any use described in Section 3.
+   The Software is not open-source software.
+
+5. CONFIDENTIALITY
+   Non-public parts of the Software, including its internal design and
+   architecture, are confidential information of ASPF and must not be
+   disclosed without ASPF's prior written consent.
+
+6. TRADEMARKS
+   "AUDP", "AUDP-ECM" and "ASPF" are names of ASPF. No right to use them is
+   granted.
+
+7. NO WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT, EXCEPT AS EXPRESSLY
+   PROVIDED IN A WRITTEN AGREEMENT.
+
+8. LIMITATION OF LIABILITY
+   TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL ASPF OR
+   THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+   AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+   CONNECTION WITH THE SOFTWARE OR THE USE OF OR OTHER DEALINGS IN THE SOFTWARE.
+
+9. TERMINATION
+   Any rights granted under a Written Agreement terminate automatically if you
+   breach its terms or this notice. Upon termination you must stop all use and
+   destroy all copies of the Software in your possession or control.
+
+10. PRECEDENCE
+    If a Written Agreement conflicts with this notice, the Written Agreement
+    prevails for the parties to it.
+
+LICENSING ENQUIRIES
+Agriculture Service of Product Farm (ASPF)
+Contact: Sbruice Singh — sbruicesingh@haclon.in
+
+SPDX-License-Identifier: LicenseRef-ASPF-Proprietary
