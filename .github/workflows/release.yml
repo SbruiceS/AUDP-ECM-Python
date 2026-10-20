@@ -40,7 +40,7 @@ jobs:
           CORE_DEPLOY_KEY: ${{ secrets.CORE_DEPLOY_KEY }}
         run: |
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          printf '%s\n' "$CORE_DEPLOY_KEY" > ~/.ssh/core_deploy_key && chmod 600 ~/.ssh/core_deploy_key
+          printf '%s\n' "$CORE_DEPLOY_KEY" | tr -d '\r' > ~/.ssh/core_deploy_key && chmod 600 ~/.ssh/core_deploy_key
           echo "$GITHUB_HOST_KEY" >> ~/.ssh/known_hosts
           git config --global core.sshCommand "ssh -i ~/.ssh/core_deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
           git config --global url."ssh://git@github.com/SbruiceS/AUDP-ECM".insteadOf "https://github.com/SbruiceS/AUDP-ECM"
