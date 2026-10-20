@@ -6,7 +6,7 @@ build-backend = "maturin"
 name = "audp-ecm"
 description = "AUDP-ECM error correction (Reed–Solomon, BCH, CRC-16, burst interleaving) for Python"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = "Apache-2.0 OR MIT"
 license-files = ["LICENSE-APACHE", "LICENSE-MIT"]
 authors = [{ name = "Sbruice Singh", email = "sbruicesingh@haclon.in" }]

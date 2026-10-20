@@ -5,7 +5,7 @@ Reed–Solomon over GF(256), binary BCH, CRC-16/CCITT-FALSE, and a
 burst-resilient pipeline that interleaves across codewords.
 
 Built with [PyO3](https://pyo3.rs) on the Rust core. One `abi3` wheel per
-platform supports CPython ≥ 3.9. No runtime dependencies.
+platform supports CPython ≥ 3.10. No runtime dependencies.
 
 > **Not cryptography.** CRC and Reed–Solomon correct channel noise; they do
 > not authenticate data. Use a MAC/AEAD in a separate layer.
@@ -16,7 +16,7 @@ platform supports CPython ≥ 3.9. No runtime dependencies.
 pip install audp-ecm
 ```
 
-Wheels (abi3, CPython ≥ 3.9): Linux x86_64/aarch64 (manylinux), Windows x64,
+Wheels (abi3, CPython ≥ 3.10): Linux x86_64/aarch64 (manylinux), Windows x64,
 macOS universal2. Every wheel is also attached to the GitHub Release with
 `SHA256SUMS` and a signed build-provenance attestation:
 

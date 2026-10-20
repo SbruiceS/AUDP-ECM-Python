@@ -16,7 +16,6 @@ dependencies = [
 [[package]]
 name = "ecm-algebraic-codes"
 version = "0.1.0"
-source = "git+https://github.com/SbruiceS/AUDP-ECM?rev=dac54f1d0f9fff59991c42a5554fb73bcdb0a879#dac54f1d0f9fff59991c42a5554fb73bcdb0a879"
 dependencies = [
  "ecm-finite-fields",
  "ecm-polynomials",
@@ -25,22 +24,18 @@ dependencies = [
 [[package]]
 name = "ecm-core"
 version = "0.1.0"
-source = "git+https://github.com/SbruiceS/AUDP-ECM?rev=dac54f1d0f9fff59991c42a5554fb73bcdb0a879#dac54f1d0f9fff59991c42a5554fb73bcdb0a879"
 
 [[package]]
 name = "ecm-finite-fields"
 version = "0.1.0"
-source = "git+https://github.com/SbruiceS/AUDP-ECM?rev=dac54f1d0f9fff59991c42a5554fb73bcdb0a879#dac54f1d0f9fff59991c42a5554fb73bcdb0a879"
 
 [[package]]
 name = "ecm-graph-codes"
 version = "0.1.0"
-source = "git+https://github.com/SbruiceS/AUDP-ECM?rev=dac54f1d0f9fff59991c42a5554fb73bcdb0a879#dac54f1d0f9fff59991c42a5554fb73bcdb0a879"
 
 [[package]]
 name = "ecm-kernels"
 version = "0.1.0"
-source = "git+https://github.com/SbruiceS/AUDP-ECM?rev=dac54f1d0f9fff59991c42a5554fb73bcdb0a879#dac54f1d0f9fff59991c42a5554fb73bcdb0a879"
 dependencies = [
  "ecm-algebraic-codes",
  "ecm-core",
@@ -53,7 +48,6 @@ dependencies = [
 [[package]]
 name = "ecm-polynomials"
 version = "0.1.0"
-source = "git+https://github.com/SbruiceS/AUDP-ECM?rev=dac54f1d0f9fff59991c42a5554fb73bcdb0a879#dac54f1d0f9fff59991c42a5554fb73bcdb0a879"
 dependencies = [
  "ecm-finite-fields",
 ]
@@ -61,7 +55,6 @@ dependencies = [
 [[package]]
 name = "ecm-probabilistic"
 version = "0.1.0"
-source = "git+https://github.com/SbruiceS/AUDP-ECM?rev=dac54f1d0f9fff59991c42a5554fb73bcdb0a879#dac54f1d0f9fff59991c42a5554fb73bcdb0a879"
 
 [[package]]
 name = "heck"

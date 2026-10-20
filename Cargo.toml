@@ -13,8 +13,9 @@ name = "audp_ecm_native"
 crate-type = ["cdylib"]
 
 [dependencies]
-# Stable ABI (abi3): one wheel per platform works on CPython >= 3.9.
-pyo3 = { version = "0.30", features = ["abi3-py39"] }
+# Stable ABI (abi3): one wheel per platform works on CPython >= 3.10
+# (3.9 is end-of-life and no longer receives security fixes).
+pyo3 = { version = "0.30", features = ["abi3-py310"] }
 
 # AUDP-ECM core (private repository). Pinned by commit for reproducible,
 # reviewable builds; bump deliberately. Local development can override this
