@@ -1,0 +1,35 @@
+[package]
+name = "audp-ecm-python"
+version = "0.2.0"
+edition = "2021"
+authors = ["Sbruice Singh <sbruicesingh@haclon.in>"]
+license = "Apache-2.0 OR MIT"
+description = "Python bindings for AUDP-ECM (Reed–Solomon, BCH, CRC, burst interleaving)"
+repository = "https://github.com/SbruiceS/AUDP-ECM-Python"
+publish = false
+
+[lib]
+name = "audp_ecm_native"
+crate-type = ["cdylib"]
+
+[dependencies]
+# Stable ABI (abi3): one wheel per platform works on CPython >= 3.9.
+pyo3 = { version = "0.30", features = ["abi3-py39"] }
+
+# AUDP-ECM core (private repository). Pinned by commit for reproducible,
+# reviewable builds; bump deliberately. Local development can override this
+# with a gitignored `.cargo/config.toml` [patch] (see CONTRIBUTING.md).
+ecm-kernels = { git = "https://github.com/SbruiceS/AUDP-ECM", rev = "42b04c5a8050d4a2be0fb635a47ca61ffbaf80cc" }
+ecm-algebraic-codes = { git = "https://github.com/SbruiceS/AUDP-ECM", rev = "42b04c5a8050d4a2be0fb635a47ca61ffbaf80cc" }
+ecm-core = { git = "https://github.com/SbruiceS/AUDP-ECM", rev = "42b04c5a8050d4a2be0fb635a47ca61ffbaf80cc" }
+ecm-probabilistic = { git = "https://github.com/SbruiceS/AUDP-ECM", rev = "42b04c5a8050d4a2be0fb635a47ca61ffbaf80cc" }
+
+[features]
+# Enabled by maturin when building the extension module.
+extension-module = ["pyo3/extension-module"]
+
+[profile.release]
+overflow-checks = true
+lto = "thin"
+codegen-units = 1
+strip = "debuginfo"

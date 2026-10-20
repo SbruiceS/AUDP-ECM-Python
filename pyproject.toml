@@ -1,0 +1,45 @@
+[build-system]
+requires = ["maturin>=1.15,<2"]
+build-backend = "maturin"
+
+[project]
+name = "audp-ecm"
+description = "AUDP-ECM error correction (Reed–Solomon, BCH, CRC-16, burst interleaving) for Python"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0 OR MIT"
+license-files = ["LICENSE-APACHE", "LICENSE-MIT"]
+authors = [{ name = "Sbruice Singh", email = "sbruicesingh@haclon.in" }]
+keywords = ["error-correction", "reed-solomon", "bch", "crc", "telemetry", "fec"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Rust",
+    "Topic :: Communications",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Typing :: Typed",
+]
+dynamic = ["version"]
+# No runtime dependencies (smaller supply-chain surface).
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=8", "hypothesis>=6.100"]
+
+[project.urls]
+Repository = "https://github.com/SbruiceS/AUDP-ECM-Python"
+Issues = "https://github.com/SbruiceS/AUDP-ECM-Python/issues"
+Security = "https://github.com/SbruiceS/AUDP-ECM-Python/security/policy"
+
+[tool.maturin]
+python-source = "python"
+module-name = "audp_ecm._native"
+features = ["extension-module"]
+strip = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"

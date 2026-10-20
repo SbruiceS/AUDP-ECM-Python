@@ -1,0 +1,14 @@
+/target/
+/.venv/
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.dylib
+/dist/
+/build/
+*.egg-info/
+.pytest_cache/
+.hypothesis/
+# Local-only core override (see CONTRIBUTING.md)
+/.cargo/config.toml

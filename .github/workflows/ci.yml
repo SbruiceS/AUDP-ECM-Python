@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+
+jobs:
+  lint:
+    name: Rust lint + audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Grant read access to the private core (pinned commit only)
+        env:
+          CORE_REPO_TOKEN: ${{ secrets.CORE_REPO_TOKEN }}
+        run: |
+          test -n "$CORE_REPO_TOKEN" || { echo "::error::secret CORE_REPO_TOKEN is not set"; exit 1; }
+          git config --global url."https://x-access-token:${CORE_REPO_TOKEN}@github.com/SbruiceS/AUDP-ECM".insteadOf "https://github.com/SbruiceS/AUDP-ECM"
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Clippy (deny warnings)
+        run: cargo clippy --release --locked -- -D warnings
+
+      - name: cargo audit
+        run: |
+          cargo install cargo-audit --locked
+          cargo audit
+
+  test:
+    name: Test (${{ matrix.os }}, py${{ matrix.python }})
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.9", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Grant read access to the private core
+        shell: bash
+        env:
+          CORE_REPO_TOKEN: ${{ secrets.CORE_REPO_TOKEN }}
+        run: git config --global url."https://x-access-token:${CORE_REPO_TOKEN}@github.com/SbruiceS/AUDP-ECM".insteadOf "https://github.com/SbruiceS/AUDP-ECM"
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Build and install
+        shell: bash
+        run: |
+          python -m venv .venv
+          if [ -f .venv/bin/activate ]; then . .venv/bin/activate; else . .venv/Scripts/activate; fi
+          python -m pip install --upgrade pip
+          pip install "maturin>=1.15,<2" "pytest>=8" "hypothesis>=6.100" pip-audit
+          maturin develop --release --locked
+          pytest
+          pip-audit
