@@ -1,3 +1,7 @@
+<p align="center">
+  <a href="https://sbruices.github.io/AUDP-ECM-Website/"><img src="https://sbruices.github.io/AUDP-ECM-Website/assets/logo-1200.png" alt="AUDP-ECM — AUDP Error Correction Mathematics Engine" width="560"></a>
+</p>
+
 # audp-ecm (Python)
 
 [![CI](https://github.com/SbruiceS/AUDP-ECM-Python/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SbruiceS/AUDP-ECM-Python/actions/workflows/ci.yml)
@@ -7,6 +11,7 @@
 [![Unsafe](https://img.shields.io/badge/unsafe-forbidden-success)](docs/security.md)
 [![License](https://img.shields.io/badge/license-proprietary%20(ASPF)-lightgrey)](LICENSE)
 [![Website](https://img.shields.io/badge/website-AUDP--ECM-0b7285)](https://sbruices.github.io/AUDP-ECM-Website/)
+[![Live demo](https://img.shields.io/badge/live%20demo-try%20it-2e9e3a)](https://sbruices.github.io/AUDP-ECM-Website/#demo)
 
 Python bindings for **AUDP-ECM**, the AUDP Error Correction Mathematics Engine:
 Reed–Solomon over GF(256), binary BCH, CRC-16/CCITT-FALSE, and a
