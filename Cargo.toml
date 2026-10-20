@@ -19,10 +19,10 @@ pyo3 = { version = "0.30", features = ["abi3-py39"] }
 # AUDP-ECM core (private repository). Pinned by commit for reproducible,
 # reviewable builds; bump deliberately. Local development can override this
 # with a gitignored `.cargo/config.toml` [patch] (see CONTRIBUTING.md).
-ecm-kernels = { git = "https://github.com/SbruiceS/AUDP-ECM", rev = "42b04c5a8050d4a2be0fb635a47ca61ffbaf80cc" }
-ecm-algebraic-codes = { git = "https://github.com/SbruiceS/AUDP-ECM", rev = "42b04c5a8050d4a2be0fb635a47ca61ffbaf80cc" }
-ecm-core = { git = "https://github.com/SbruiceS/AUDP-ECM", rev = "42b04c5a8050d4a2be0fb635a47ca61ffbaf80cc" }
-ecm-probabilistic = { git = "https://github.com/SbruiceS/AUDP-ECM", rev = "42b04c5a8050d4a2be0fb635a47ca61ffbaf80cc" }
+ecm-kernels = { git = "https://github.com/SbruiceS/AUDP-ECM", rev = "dac54f1d0f9fff59991c42a5554fb73bcdb0a879" }
+ecm-algebraic-codes = { git = "https://github.com/SbruiceS/AUDP-ECM", rev = "dac54f1d0f9fff59991c42a5554fb73bcdb0a879" }
+ecm-core = { git = "https://github.com/SbruiceS/AUDP-ECM", rev = "dac54f1d0f9fff59991c42a5554fb73bcdb0a879" }
+ecm-probabilistic = { git = "https://github.com/SbruiceS/AUDP-ECM", rev = "dac54f1d0f9fff59991c42a5554fb73bcdb0a879" }
 
 [features]
 # Enabled by maturin when building the extension module.
