@@ -13,11 +13,11 @@
 #![forbid(unsafe_code)]
 
 use ecm_kernels::{
-    k_burst_capacity, k_crc16, k_crc16_append, k_crc16_verify, k_deinterleave_codewords,
-    k_gf_inv, k_gf_mul, k_gf_pow, k_interleave_codewords, k_interleave_depth_for_burst,
-    k_mark_erasures, k_mark_erasures_bounded, k_pipeline_protect_burst, k_pipeline_recover_burst,
-    k_rs_decode, k_rs_decode_euclidean_erasures, k_rs_encode, k_rs_syndromes, Bch, EcError,
-    ReedSolomon, RsConfig,
+    k_burst_capacity, k_crc16, k_crc16_append, k_crc16_verify, k_deinterleave_codewords, k_gf_inv,
+    k_gf_mul, k_gf_pow, k_interleave_codewords, k_interleave_depth_for_burst, k_mark_erasures,
+    k_mark_erasures_bounded, k_pipeline_protect_burst, k_pipeline_recover_burst, k_rs_decode,
+    k_rs_decode_euclidean_erasures, k_rs_encode, k_rs_syndromes, Bch, EcError, ReedSolomon,
+    RsConfig,
 };
 use ecm_probabilistic::{BurstChannel, ErasureChannel, SymbolErrorChannel};
 use pyo3::create_exception;
@@ -30,18 +30,42 @@ const MAX_INPUT_BYTES: usize = 16 * 1024 * 1024;
 /// Upper bound on burst interleave depth (matches the C ABI).
 const MAX_DEPTH: usize = 4096;
 
-create_exception!(_native, EcmError, PyException, "Base class for AUDP-ECM errors.");
+create_exception!(
+    _native,
+    EcmError,
+    PyException,
+    "Base class for AUDP-ECM errors."
+);
 create_exception!(_native, ConfigError, EcmError, "Invalid code parameters.");
-create_exception!(_native, InputLengthError, EcmError, "Input has the wrong length or is too large.");
-create_exception!(_native, ErasureIndexError, EcmError, "Erasure index out of range.");
-create_exception!(_native, DecodeError, EcmError, "Too many errors, or the result failed verification.");
+create_exception!(
+    _native,
+    InputLengthError,
+    EcmError,
+    "Input has the wrong length or is too large."
+);
+create_exception!(
+    _native,
+    ErasureIndexError,
+    EcmError,
+    "Erasure index out of range."
+);
+create_exception!(
+    _native,
+    DecodeError,
+    EcmError,
+    "Too many errors, or the result failed verification."
+);
 
 fn to_py(e: EcError) -> PyErr {
     match e {
         EcError::InvalidConfig => ConfigError::new_err("invalid code configuration"),
-        EcError::InvalidInputLength => InputLengthError::new_err("input length does not match the code"),
+        EcError::InvalidInputLength => {
+            InputLengthError::new_err("input length does not match the code")
+        }
         EcError::InvalidErasureIndex => ErasureIndexError::new_err("erasure index out of range"),
-        EcError::DecodingFailed => DecodeError::new_err("decoding failed: errors exceed capability or verification failed"),
+        EcError::DecodingFailed => {
+            DecodeError::new_err("decoding failed: errors exceed capability or verification failed")
+        }
         EcError::InternalError => EcmError::new_err("internal error"),
     }
 }
@@ -63,14 +87,18 @@ fn check_prob(p: f64, name: &str, upper_inclusive: bool) -> PyResult<()> {
     let ok = p.is_finite() && p >= 0.0 && if upper_inclusive { p <= 1.0 } else { p < 1.0 };
     if !ok {
         let range = if upper_inclusive { "[0, 1]" } else { "[0, 1)" };
-        return Err(PyValueError::new_err(format!("{name} must be in {range}, got {p}")));
+        return Err(PyValueError::new_err(format!(
+            "{name} must be in {range}, got {p}"
+        )));
     }
     Ok(())
 }
 
 fn check_depth(depth: usize) -> PyResult<()> {
     if depth == 0 || depth > MAX_DEPTH {
-        return Err(ConfigError::new_err(format!("depth must be in 1..={MAX_DEPTH}, got {depth}")));
+        return Err(ConfigError::new_err(format!(
+            "depth must be in 1..={MAX_DEPTH}, got {depth}"
+        )));
     }
     Ok(())
 }
@@ -215,18 +243,30 @@ impl PyReedSolomon {
 
     /// Decode n received bytes (Berlekamp–Massey). `erasures` are known-bad positions.
     #[pyo3(signature = (received, erasures = Vec::new()))]
-    fn decode(&self, py: Python<'_>, received: &[u8], erasures: Vec<usize>) -> PyResult<PyDecodeResult> {
+    fn decode(
+        &self,
+        py: Python<'_>,
+        received: &[u8],
+        erasures: Vec<usize>,
+    ) -> PyResult<PyDecodeResult> {
         if erasures.len() > self.rs.config().n {
             return Err(InputLengthError::new_err("more erasures than symbols"));
         }
         let rs: &ReedSolomon = &self.rs;
-        let r = py.detach(|| k_rs_decode(rs, received, &erasures)).map_err(core_err)?;
+        let r = py
+            .detach(|| k_rs_decode(rs, received, &erasures))
+            .map_err(core_err)?;
         decode_result(py, r)
     }
 
     /// Decode using the Euclidean key-equation solver (same contract as `decode`).
     #[pyo3(signature = (received, erasures = Vec::new()))]
-    fn decode_euclidean(&self, py: Python<'_>, received: &[u8], erasures: Vec<usize>) -> PyResult<PyDecodeResult> {
+    fn decode_euclidean(
+        &self,
+        py: Python<'_>,
+        received: &[u8],
+        erasures: Vec<usize>,
+    ) -> PyResult<PyDecodeResult> {
         if erasures.len() > self.rs.config().n {
             return Err(InputLengthError::new_err("more erasures than symbols"));
         }
@@ -273,7 +313,10 @@ impl BurstCodec {
     #[new]
     fn py_new(n: usize, k: usize, depth: usize) -> PyResult<Self> {
         check_depth(depth)?;
-        Ok(Self { rs: new_rs(n, k)?, depth })
+        Ok(Self {
+            rs: new_rs(n, k)?,
+            depth,
+        })
     }
 
     /// Smallest depth that survives a `burst_len`-symbol burst and fits `payload_len` bytes.
@@ -286,7 +329,9 @@ impl BurstCodec {
         while k_burst_capacity(&rs, depth) < payload_len {
             depth += 1;
             if depth > MAX_DEPTH {
-                return Err(InputLengthError::new_err("payload too large for any allowed depth"));
+                return Err(InputLengthError::new_err(
+                    "payload too large for any allowed depth",
+                ));
             }
         }
         if depth > MAX_DEPTH {
@@ -327,13 +372,20 @@ impl BurstCodec {
             )));
         }
         let (rs, depth) = (&self.rs, self.depth);
-        let tx = py.detach(|| k_pipeline_protect_burst(rs, payload, depth)).map_err(core_err)?;
+        let tx = py
+            .detach(|| k_pipeline_protect_burst(rs, payload, depth))
+            .map_err(core_err)?;
         Ok(PyBytes::new(py, &tx))
     }
 
     /// `erasures` index the transmitted stream.
     #[pyo3(signature = (received, erasures = Vec::new()))]
-    fn recover<'py>(&self, py: Python<'py>, received: &[u8], erasures: Vec<usize>) -> PyResult<Bound<'py, PyBytes>> {
+    fn recover<'py>(
+        &self,
+        py: Python<'py>,
+        received: &[u8],
+        erasures: Vec<usize>,
+    ) -> PyResult<Bound<'py, PyBytes>> {
         if erasures.len() > self.encoded_len() {
             return Err(InputLengthError::new_err("more erasures than symbols"));
         }
@@ -356,7 +408,10 @@ impl BurstCodec {
 
 /// Interleave equal-length codewords: symbol j of codeword i → j*depth + i.
 #[pyfunction]
-fn interleave_codewords<'py>(py: Python<'py>, codewords: Vec<Vec<u8>>) -> PyResult<Bound<'py, PyBytes>> {
+fn interleave_codewords<'py>(
+    py: Python<'py>,
+    codewords: Vec<Vec<u8>>,
+) -> PyResult<Bound<'py, PyBytes>> {
     let total: usize = codewords.iter().map(Vec::len).sum();
     check_len(total, "codewords")?;
     let out = k_interleave_codewords(&codewords)
@@ -366,7 +421,11 @@ fn interleave_codewords<'py>(py: Python<'py>, codewords: Vec<Vec<u8>>) -> PyResu
 
 /// Inverse of `interleave_codewords`.
 #[pyfunction]
-fn deinterleave_codewords<'py>(py: Python<'py>, data: &[u8], depth: usize) -> PyResult<Vec<Bound<'py, PyBytes>>> {
+fn deinterleave_codewords<'py>(
+    py: Python<'py>,
+    data: &[u8],
+    depth: usize,
+) -> PyResult<Vec<Bound<'py, PyBytes>>> {
     check_len(data.len(), "data")?;
     let cws = k_deinterleave_codewords(data, depth)
         .map_err(|_| InputLengthError::new_err("depth must be > 0 and divide len(data)"))?;
@@ -429,7 +488,11 @@ impl BchCode {
 /// `max_erasures` least reliable (use n - k to stay within the RS budget).
 #[pyfunction]
 #[pyo3(signature = (reliability, threshold, max_erasures = None))]
-fn mark_erasures(reliability: Vec<f64>, threshold: f64, max_erasures: Option<usize>) -> PyResult<Vec<usize>> {
+fn mark_erasures(
+    reliability: Vec<f64>,
+    threshold: f64,
+    max_erasures: Option<usize>,
+) -> PyResult<Vec<usize>> {
     check_len(reliability.len(), "reliability")?;
     if threshold.is_nan() {
         return Err(PyValueError::new_err("threshold must not be NaN"));
@@ -451,7 +514,9 @@ impl PySymbolErrorChannel {
     #[new]
     fn py_new(p: f64) -> PyResult<Self> {
         check_prob(p, "p", true)?;
-        Ok(Self { inner: SymbolErrorChannel::new(p) })
+        Ok(Self {
+            inner: SymbolErrorChannel::new(p),
+        })
     }
 
     #[getter]
@@ -459,7 +524,12 @@ impl PySymbolErrorChannel {
         self.inner.p
     }
 
-    fn corrupt<'py>(&self, py: Python<'py>, data: &[u8], seed: u64) -> PyResult<Bound<'py, PyBytes>> {
+    fn corrupt<'py>(
+        &self,
+        py: Python<'py>,
+        data: &[u8],
+        seed: u64,
+    ) -> PyResult<Bound<'py, PyBytes>> {
         check_len(data.len(), "data")?;
         Ok(PyBytes::new(py, &self.inner.corrupt(data, seed)))
     }
@@ -477,7 +547,9 @@ impl BurstErrorChannel {
     fn py_new(p_start: f64, p_continue: f64) -> PyResult<Self> {
         check_prob(p_start, "p_start", false)?;
         check_prob(p_continue, "p_continue", false)?;
-        Ok(Self { inner: BurstChannel::new(p_start, p_continue) })
+        Ok(Self {
+            inner: BurstChannel::new(p_start, p_continue),
+        })
     }
 
     /// Mean burst length 1 / (1 - p_continue).
@@ -486,7 +558,12 @@ impl BurstErrorChannel {
         1.0 / (1.0 - self.inner.p_continue)
     }
 
-    fn corrupt<'py>(&self, py: Python<'py>, data: &[u8], seed: u64) -> PyResult<Bound<'py, PyBytes>> {
+    fn corrupt<'py>(
+        &self,
+        py: Python<'py>,
+        data: &[u8],
+        seed: u64,
+    ) -> PyResult<Bound<'py, PyBytes>> {
         check_len(data.len(), "data")?;
         Ok(PyBytes::new(py, &self.inner.corrupt(data, seed)))
     }
@@ -503,10 +580,17 @@ impl ErasureChannelModel {
     #[new]
     fn py_new(p: f64) -> PyResult<Self> {
         check_prob(p, "p", true)?;
-        Ok(Self { inner: ErasureChannel::new(p) })
+        Ok(Self {
+            inner: ErasureChannel::new(p),
+        })
     }
 
-    fn corrupt<'py>(&self, py: Python<'py>, data: &[u8], seed: u64) -> PyResult<(Bound<'py, PyBytes>, Vec<usize>)> {
+    fn corrupt<'py>(
+        &self,
+        py: Python<'py>,
+        data: &[u8],
+        seed: u64,
+    ) -> PyResult<(Bound<'py, PyBytes>, Vec<usize>)> {
         check_len(data.len(), "data")?;
         let (w, e) = self.inner.corrupt(data, seed);
         Ok((PyBytes::new(py, &w), e))

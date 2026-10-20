@@ -1,5 +1,13 @@
 # audp-ecm (Python)
 
+[![CI](https://github.com/SbruiceS/AUDP-ECM-Python/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SbruiceS/AUDP-ECM-Python/actions/workflows/ci.yml)
+[![Release](https://github.com/SbruiceS/AUDP-ECM-Python/actions/workflows/release.yml/badge.svg)](https://github.com/SbruiceS/AUDP-ECM-Python/actions/workflows/release.yml)
+[![Python](https://img.shields.io/badge/python-3.10%2B-3776AB)](docs/index.md#compatibility)
+[![Wheels](https://img.shields.io/badge/wheels-abi3%20%7C%20linux%20%7C%20windows%20%7C%20macOS-informational)](docs/releasing.md)
+[![Unsafe](https://img.shields.io/badge/unsafe-forbidden-success)](docs/security.md)
+[![License](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue)](#licence)
+[![Website](https://img.shields.io/badge/website-AUDP--ECM-0b7285)](https://sbruices.github.io/AUDP-ECM-Website/)
+
 Python bindings for **AUDP-ECM**, the AUDP Error Correction Mathematics Engine:
 Reed–Solomon over GF(256), binary BCH, CRC-16/CCITT-FALSE, and a
 burst-resilient pipeline that interleaves across codewords.
@@ -9,6 +17,15 @@ platform supports CPython ≥ 3.10. No runtime dependencies.
 
 > **Not cryptography.** CRC and Reed–Solomon correct channel noise; they do
 > not authenticate data. Use a MAC/AEAD in a separate layer.
+
+## Documentation
+
+| | |
+|---|---|
+| [docs/api.md](docs/api.md) | API reference |
+| [docs/security.md](docs/security.md) | Security model and guarantees |
+| [docs/development.md](docs/development.md) | Building, tests, CI |
+| [docs/releasing.md](docs/releasing.md) | CD pipeline and release verification |
 
 ## Install
 

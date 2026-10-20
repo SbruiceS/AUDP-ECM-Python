@@ -19,6 +19,9 @@ ecm-polynomials = { path = "../AUDP-ECM/crates/ecm-polynomials" }
 ecm-graph-codes = { path = "../AUDP-ECM/crates/ecm-graph-codes" }
 ```
 
+> The override rewrites `Cargo.lock` to local paths. Run `git checkout Cargo.lock`
+> before committing — CI uses `--locked` and fails on a path-based lockfile.
+
 ## Bumping the core
 
 1. Update every `rev = "…"` in `Cargo.toml` to the new core commit.

@@ -1,26 +1,56 @@
 name: Release
 
-# On a version tag: build abi3 wheels, attach them (with SHA256SUMS and build
-# provenance attestations) to a GitHub Release, then publish to PyPI with
-# Trusted Publishing (OIDC) — no long-lived PyPI token is stored anywhere.
+# CD pipeline.
+#   tag v*            -> verify version, build abi3 wheels, test every wheel,
+#                        GitHub Release (checksums + provenance) via the
+#                        protected `AUDP-ECM` environment, then PyPI
+#                        (only when repo variable PYPI_PUBLISH == 'true').
+#   workflow_dispatch -> dry run: build and test all wheels, publish nothing.
 #
-# Wheels only: the private core is fetched at build time, so an sdist could
-# not be built by users without core access.
+# Wheels only: the private core is fetched at build time, so an sdist could not
+# be built by users without core access.
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
   CARGO_NET_GIT_FETCH_WITH_CLI: "true"
   GITHUB_HOST_KEY: "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
 
 jobs:
+  verify:
+    name: Verify version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - id: v
+        name: Tag must match Cargo.toml version
+        run: |
+          version=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match Cargo.toml version $version"; exit 1
+          fi
+          echo "version $version (ref $GITHUB_REF_NAME)"
+
   wheels:
     name: Wheels (${{ matrix.os }} ${{ matrix.target }})
+    needs: verify
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -30,7 +60,7 @@ jobs:
           - { os: windows-latest, target: x64 }
           - { os: macos-latest, target: universal2-apple-darwin }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -62,21 +92,58 @@ jobs:
           args: --release --locked --offline --out dist
           manylinux: auto
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-${{ matrix.os }}-${{ matrix.target }}
           path: dist
+          if-no-files-found: error
+
+  test-wheels:
+    name: Test wheel (${{ matrix.os }}, py${{ matrix.python }})
+    needs: wheels
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Install the built wheel (no source build) and run the test suite
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --only-binary=:all: --no-index --find-links dist audp-ecm
+          python -m pip install "pytest>=8" "hypothesis>=6.100"
+          # repo root has no importable audp_ecm (sources live in python/),
+          # so this exercises the installed wheel
+          python -m pytest -q tests
 
   github-release:
     name: GitHub Release (wheels + checksums + provenance)
-    needs: wheels
+    needs: [verify, test-wheels]
+    if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: AUDP-ECM
+      url: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}
     permissions:
       contents: write          # create the release
       id-token: write          # sign provenance
       attestations: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
@@ -84,7 +151,7 @@ jobs:
       - name: Checksums
         run: cd dist && sha256sum *.whl | tee SHA256SUMS
 
-      - uses: actions/attest-build-provenance@v2
+      - uses: actions/attest-build-provenance@v4
         with:
           subject-path: dist/*.whl
 
@@ -99,14 +166,18 @@ jobs:
   pypi:
     name: Publish to PyPI
     needs: github-release
+    # Enable after configuring the PyPI Trusted Publisher (docs/releasing.md):
+    #   gh variable set PYPI_PUBLISH --body true --repo SbruiceS/AUDP-ECM-Python
+    if: github.ref_type == 'tag' && vars.PYPI_PUBLISH == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment:
       name: pypi
       url: https://pypi.org/project/audp-ecm/
     permissions:
       id-token: write          # OIDC for Trusted Publishing
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
