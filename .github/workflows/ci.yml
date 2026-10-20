@@ -12,6 +12,8 @@ permissions:
 env:
   CARGO_TERM_COLOR: always
   CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+  # GitHub's published ed25519 host key (from `gh api meta`), pinned instead of trust-on-first-use.
+  GITHUB_HOST_KEY: "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
 
 jobs:
   lint:
@@ -22,12 +24,16 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Grant read access to the private core (pinned commit only)
+      - name: Core access (read-only deploy key)
         env:
-          CORE_REPO_TOKEN: ${{ secrets.CORE_REPO_TOKEN }}
+          CORE_DEPLOY_KEY: ${{ secrets.CORE_DEPLOY_KEY }}
         run: |
-          test -n "$CORE_REPO_TOKEN" || { echo "::error::secret CORE_REPO_TOKEN is not set"; exit 1; }
-          git config --global url."https://x-access-token:${CORE_REPO_TOKEN}@github.com/SbruiceS/AUDP-ECM".insteadOf "https://github.com/SbruiceS/AUDP-ECM"
+          test -n "$CORE_DEPLOY_KEY" || { echo "::error::secret CORE_DEPLOY_KEY is not set"; exit 1; }
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$CORE_DEPLOY_KEY" > ~/.ssh/core_deploy_key && chmod 600 ~/.ssh/core_deploy_key
+          echo "$GITHUB_HOST_KEY" >> ~/.ssh/known_hosts
+          git config --global core.sshCommand "ssh -i ~/.ssh/core_deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+          git config --global url."ssh://git@github.com/SbruiceS/AUDP-ECM".insteadOf "https://github.com/SbruiceS/AUDP-ECM"
 
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -55,11 +61,16 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Grant read access to the private core
+      - name: Core access (read-only deploy key)
         shell: bash
         env:
-          CORE_REPO_TOKEN: ${{ secrets.CORE_REPO_TOKEN }}
-        run: git config --global url."https://x-access-token:${CORE_REPO_TOKEN}@github.com/SbruiceS/AUDP-ECM".insteadOf "https://github.com/SbruiceS/AUDP-ECM"
+          CORE_DEPLOY_KEY: ${{ secrets.CORE_DEPLOY_KEY }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$CORE_DEPLOY_KEY" > ~/.ssh/core_deploy_key && chmod 600 ~/.ssh/core_deploy_key
+          echo "$GITHUB_HOST_KEY" >> ~/.ssh/known_hosts
+          git config --global core.sshCommand "ssh -i ~/.ssh/core_deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+          git config --global url."ssh://git@github.com/SbruiceS/AUDP-ECM".insteadOf "https://github.com/SbruiceS/AUDP-ECM"
 
       - uses: dtolnay/rust-toolchain@stable
 
@@ -67,7 +78,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
 
-      - name: Build and install
+      - name: Build, test, audit
         shell: bash
         run: |
           python -m venv .venv

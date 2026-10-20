@@ -1,7 +1,11 @@
 name: Release
 
-# Build abi3 wheels + sdist on a version tag, attest provenance, and publish to
-# PyPI with Trusted Publishing (OIDC) — no long-lived PyPI token is stored.
+# On a version tag: build abi3 wheels, attach them (with SHA256SUMS and build
+# provenance attestations) to a GitHub Release, then publish to PyPI with
+# Trusted Publishing (OIDC) — no long-lived PyPI token is stored anywhere.
+#
+# Wheels only: the private core is fetched at build time, so an sdist could
+# not be built by users without core access.
 on:
   push:
     tags: ["v*"]
@@ -11,12 +15,14 @@ permissions:
 
 env:
   CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+  GITHUB_HOST_KEY: "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
 
 jobs:
   wheels:
     name: Wheels (${{ matrix.os }} ${{ matrix.target }})
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - { os: ubuntu-latest, target: x86_64 }
@@ -28,57 +34,47 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Grant read access to the private core (host builds)
+      - name: Core access (read-only deploy key)
         shell: bash
         env:
-          CORE_REPO_TOKEN: ${{ secrets.CORE_REPO_TOKEN }}
-        run: git config --global url."https://x-access-token:${CORE_REPO_TOKEN}@github.com/SbruiceS/AUDP-ECM".insteadOf "https://github.com/SbruiceS/AUDP-ECM"
+          CORE_DEPLOY_KEY: ${{ secrets.CORE_DEPLOY_KEY }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$CORE_DEPLOY_KEY" > ~/.ssh/core_deploy_key && chmod 600 ~/.ssh/core_deploy_key
+          echo "$GITHUB_HOST_KEY" >> ~/.ssh/known_hosts
+          git config --global core.sshCommand "ssh -i ~/.ssh/core_deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+          git config --global url."ssh://git@github.com/SbruiceS/AUDP-ECM".insteadOf "https://github.com/SbruiceS/AUDP-ECM"
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      # Vendor all sources on the host (where the deploy key lives) so the
+      # manylinux/cross containers build offline and never see the key.
+      - name: Vendor dependencies
+        shell: bash
+        run: |
+          mkdir -p .cargo
+          cargo vendor --locked vendor > .cargo/config.toml
+          rm -f ~/.ssh/core_deploy_key
 
       - uses: PyO3/maturin-action@v1
-        env:
-          CORE_REPO_TOKEN: ${{ secrets.CORE_REPO_TOKEN }}
         with:
           target: ${{ matrix.target }}
-          args: --release --locked --out dist
+          args: --release --locked --offline --out dist
           manylinux: auto
-          docker-options: -e CORE_REPO_TOKEN -e CARGO_NET_GIT_FETCH_WITH_CLI=true
-          before-script-linux: |
-            git config --global url."https://x-access-token:${CORE_REPO_TOKEN}@github.com/SbruiceS/AUDP-ECM".insteadOf "https://github.com/SbruiceS/AUDP-ECM"
 
       - uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.os }}-${{ matrix.target }}
           path: dist
 
-  sdist:
-    name: Source distribution
+  github-release:
+    name: GitHub Release (wheels + checksums + provenance)
+    needs: wheels
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: Grant read access to the private core
-        env:
-          CORE_REPO_TOKEN: ${{ secrets.CORE_REPO_TOKEN }}
-        run: git config --global url."https://x-access-token:${CORE_REPO_TOKEN}@github.com/SbruiceS/AUDP-ECM".insteadOf "https://github.com/SbruiceS/AUDP-ECM"
-      - uses: PyO3/maturin-action@v1
-        with:
-          command: sdist
-          args: --out dist
-      - uses: actions/upload-artifact@v4
-        with:
-          name: sdist
-          path: dist
-
-  publish:
-    name: Attest and publish to PyPI
-    needs: [wheels, sdist]
-    runs-on: ubuntu-latest
-    environment: pypi            # protect with required reviewers in repo settings
     permissions:
-      id-token: write            # OIDC for Trusted Publishing + attestations
+      contents: write          # create the release
+      id-token: write          # sign provenance
       attestations: write
-      contents: read
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -86,11 +82,34 @@ jobs:
           merge-multiple: true
 
       - name: Checksums
-        run: cd dist && sha256sum * | tee SHA256SUMS
+        run: cd dist && sha256sum *.whl | tee SHA256SUMS
 
       - uses: actions/attest-build-provenance@v2
         with:
-          subject-path: dist/*
+          subject-path: dist/*.whl
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.whl dist/SHA256SUMS \
+            --repo "$GITHUB_REPOSITORY" --title "audp-ecm $GITHUB_REF_NAME" --generate-notes \
+            --notes "Verify: \`sha256sum -c SHA256SUMS\` and \`gh attestation verify <wheel> --repo $GITHUB_REPOSITORY\`."
+
+  pypi:
+    name: Publish to PyPI
+    needs: github-release
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/audp-ecm/
+    permissions:
+      id-token: write          # OIDC for Trusted Publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:

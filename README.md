@@ -13,8 +13,15 @@ platform supports CPython ≥ 3.9. No runtime dependencies.
 ## Install
 
 ```bash
-pip install audp-ecm                     # from a wheel, when published
-pip install git+https://github.com/SbruiceS/AUDP-ECM-Python   # from source
+pip install audp-ecm
+```
+
+Wheels (abi3, CPython ≥ 3.9): Linux x86_64/aarch64 (manylinux), Windows x64,
+macOS universal2. Every wheel is also attached to the GitHub Release with
+`SHA256SUMS` and a signed build-provenance attestation:
+
+```bash
+gh attestation verify audp_ecm-*.whl --repo SbruiceS/AUDP-ECM-Python
 ```
 
 Building from source needs a Rust toolchain **and read access to the private

@@ -12,3 +12,4 @@ __pycache__/
 .hypothesis/
 # Local-only core override (see CONTRIBUTING.md)
 /.cargo/config.toml
+/vendor/

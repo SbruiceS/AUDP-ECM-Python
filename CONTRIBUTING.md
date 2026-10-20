@@ -27,9 +27,14 @@ ecm-graph-codes = { path = "../AUDP-ECM/crates/ecm-graph-codes" }
 
 ## CI secret
 
-The core repository is private. CI needs a secret **`CORE_REPO_TOKEN`**: a
-fine-grained personal access token with **read-only "Contents"** access to
-`SbruiceS/AUDP-ECM` only. It is used solely to fetch the pinned core commit.
+The core repository is private. CI uses the secret **`CORE_DEPLOY_KEY`**: the
+private half of an SSH **read-only deploy key** registered on
+`SbruiceS/AUDP-ECM` only. GitHub's host key is pinned in the workflows
+(`StrictHostKeyChecking=yes`). Release builds vendor all sources on the host
+and delete the key before the manylinux/cross containers run, so the key
+never enters a build container. To rotate it, add a new read-only deploy key
+on the core, replace the secret in this repo and `AUDP-ECM-D`, then delete
+the old key.
 
 ## Rules
 
